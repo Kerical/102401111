@@ -67,13 +67,17 @@
       else link.removeAttribute('aria-current');
     });
     if (page === 'home') CampusHome.render(data.posts, params);
+    if (page === 'search') CampusSearch.render(data.posts, params);
     document.title = (page === 'home' ? '首页' : page === 'search' ? '搜索物品' : '信息详情') + ' · 校园失物招领';
   }
 
   window.CampusUI = { element, navigate, setCategories, renderList };
   CampusHome.init();
-  window.addEventListener('hashchange', renderRoute);
-  window.addEventListener('focus', renderRoute);
+  CampusSearch.init();
+  window.addEventListener('hashchange', function () {
+    renderRoute();
+    window.scrollTo(0, 0);
+  });
   window.addEventListener('campus:posts-changed', renderRoute);
   window.addEventListener('storage', function (event) {
     if (event.key === CampusPosts.STORAGE_KEY || event.key === null) renderRoute();

@@ -30,11 +30,14 @@
 
   function filterPosts(posts, options = {}) {
     const place = String(options.place || '').trim().toLowerCase();
+    const terms = String(options.keyword || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
     return posts.filter(function (post) {
+      const searchable = [post.name, post.category, post.place, post.desc].join(' ').toLowerCase();
       return (options.includeFinished || !isFinished(post)) &&
         (!options.type || options.type === 'all' || post.type === options.type) &&
         (!options.category || post.category === options.category) &&
-        (!place || post.place.toLowerCase().includes(place));
+        (!place || post.place.toLowerCase().includes(place)) &&
+        terms.every(term => searchable.includes(term));
     }).sort(function (a, b) {
       return timestamp(b.createdAt || b.time) - timestamp(a.createdAt || a.time);
     });

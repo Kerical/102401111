@@ -89,3 +89,42 @@ test('类别选项去重，未知类别使用通用物品图标', () => {
   assert.deepEqual(Posts.categories([post(), post(), post({ category: '钥匙' })]).sort(), ['钥匙', '雨伞'].sort());
   assert.equal(Posts.iconFor(post({ category: '其他' })), '🔎');
 });
+
+test('关键词检索名称及描述，并忽略大小写和首尾空格', () => {
+  const records = [post({ name: 'AirPods Pro', desc: '白色充电盒' }), post({ id: 2 })];
+  assert.deepEqual(Posts.filterPosts(records, { keyword: '  AIRpods  ' }).map(p => p.id), ['test-1']);
+  assert.deepEqual(Posts.filterPosts(records, { keyword: '充电盒' }).map(p => p.id), ['test-1']);
+});
+
+test('多个关键词需要全部匹配，可以跨名称和地点字段', () => {
+  const records = [post(), post({ id: 2, place: '食堂' }), post({ id: 3, name: '蓝色雨伞' })];
+  assert.deepEqual(Posts.filterPosts(records, { keyword: ' 黑色   图书馆 ' }).map(p => p.id), ['test-1']);
+});
+
+test('空白关键词显示当前条件下全部有效信息', () => {
+  assert.deepEqual(Posts.filterPosts([post()], { keyword: ' \t\n ' }).map(p => p.id), ['test-1']);
+});
+
+test('关键词不匹配时返回空数组', () => {
+  assert.deepEqual(Posts.filterPosts([post()], { keyword: '不存在的物品' }), []);
+});
+
+test('关键词、类型、类别和地点筛选按交集组合', () => {
+  const records = [post(), post({ id: 2, type: 'found', status: '招领中' }), post({ id: 3, place: '食堂' })];
+  assert.deepEqual(Posts.filterPosts(records, { keyword: '银色', type: 'lost', category: '雨伞', place: '图书馆' }).map(p => p.id), ['test-1']);
+});
+
+test('历史信息只有显式选择包含已结束信息时参与搜索', () => {
+  const records = [post(), post({ id: 2, status: '已找到' })];
+  assert.deepEqual(Posts.filterPosts(records, { keyword: '雨伞' }).map(p => p.id), ['test-1']);
+  assert.deepEqual(Posts.filterPosts(records, { keyword: '雨伞', includeFinished: true }).map(p => p.id), ['test-1', 2]);
+});
+
+test('联系方式不纳入公开关键词检索', () => {
+  assert.deepEqual(Posts.filterPosts([post({ contact: 'only-in-contact-123' })], { keyword: 'only-in-contact-123' }), []);
+});
+
+test('HTML 字符作为普通文本参与搜索', () => {
+  const record = post({ name: '<script>物品</script>' });
+  assert.deepEqual(Posts.filterPosts([record], { keyword: '<script>' }), [record]);
+});

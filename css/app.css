@@ -97,6 +97,17 @@ a.card:hover { border-color: #93bdec; box-shadow: 0 7px 20px #223c5818; }
 .nav-link b { font-size: 22px; line-height: 1.3; font-weight: 600; }
 .nav-link.active { color: var(--primary); font-weight: 700; }
 .nav-link:disabled { color: #8896a4; }
+.search-label { display: block; margin-top: 20px; font-size: 13px; color: var(--muted); }
+.search-box { display: flex; gap: 10px; margin-top: 5px; }
+.search-box input { flex: 1; min-width: 0; margin: 0; }
+.search-box button { flex: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.chip { border: 1px solid #d4e3ef; background: #fff; color: #456177; padding: 6px 14px; border-radius: 999px; font-size: 12px; }
+.chip:hover { border-color: #85b5e8; color: var(--primary); }
+.search-filters { margin-top: 20px; margin-bottom: 8px; }
+.search-options { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.checkbox-label { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.checkbox-label input { width: 16px; min-height: 16px; margin: 0; accent-color: var(--primary); }
 @media (max-width: 700px) {
   body { padding: 0; background: var(--background); }
   .app-shell { border: 0; border-radius: 0; box-shadow: none; }

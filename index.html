@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="css/app.css">
   <script defer src="js/posts.js"></script>
   <script defer src="js/home.js"></script>
+  <script defer src="js/search.js"></script>
   <script defer src="js/app.js"></script>
 </head>
 <body>
@@ -21,7 +22,7 @@
         <div class="hero">
           <h1 id="home-heading">校园里的失物，在这里找</h1>
           <p>集中浏览寻物与招领信息，找到线索后联系发布者。</p>
-          <button class="search-entry" type="button" disabled><span aria-hidden="true">⌕</span> 关键词搜索即将开放</button>
+          <a class="search-entry" href="#search"><span aria-hidden="true">⌕</span> 搜索校园卡、钥匙、雨伞等物品</a>
         </div>
         <div class="quick-actions">
           <button class="quick lost" type="button" data-publish-type="lost" disabled>
@@ -50,8 +51,37 @@
           <div class="list" id="home-list"></div>
         </div>
       </section>
-      <section id="page-search" class="page" hidden>
-        <div class="empty"><h1>关键词搜索即将开放</h1><a href="#home">返回首页</a></div>
+      <section id="page-search" class="page" hidden aria-labelledby="search-heading">
+        <div class="hero">
+          <h1 id="search-heading">搜索物品</h1>
+          <p>按名称、类别、地点或物品特征查找，多词搜索用空格分隔。</p>
+          <form id="search-form">
+            <label class="search-label" for="search-keyword">物品关键词</label>
+            <div class="search-box">
+              <input id="search-keyword" type="search" maxlength="200" placeholder="例如：黑色 雨伞" autocomplete="off">
+              <button class="filter-button" type="submit">搜索</button>
+            </div>
+            <div class="chips" id="search-chips" role="group" aria-label="常用搜索词">
+              <button class="chip" type="button" data-keyword="校园卡">校园卡</button>
+              <button class="chip" type="button" data-keyword="钥匙">钥匙</button>
+              <button class="chip" type="button" data-keyword="雨伞">雨伞</button>
+              <button class="chip" type="button" data-keyword="耳机">耳机</button>
+            </div>
+            <div class="filter-form search-filters">
+              <label>信息类型<select id="search-type"><option value="all">全部类型</option><option value="lost">寻物</option><option value="found">招领</option></select></label>
+              <label>物品类别<select id="search-category"><option value="">全部类别</option></select></label>
+              <label>丢失 / 拾取地点<input id="search-place" type="search" maxlength="100" placeholder="例如：图书馆"></label>
+            </div>
+            <div class="search-options">
+              <label class="checkbox-label"><input id="search-finished" type="checkbox">包括已结束的信息</label>
+              <button class="text-button" type="button" id="search-reset">清空条件</button>
+            </div>
+          </form>
+        </div>
+        <div class="section">
+          <p class="result-note" id="search-note" aria-live="polite"></p>
+          <div class="list" id="search-list"></div>
+        </div>
       </section>
       <section id="page-detail" class="page" hidden>
         <div class="empty"><h1>详情模块即将开放</h1><a href="#home">返回首页</a></div>
@@ -59,7 +89,7 @@
     </main>
     <nav class="bottom-nav" aria-label="主要导航">
       <a class="nav-link active" href="#home" data-page="home" aria-current="page"><b aria-hidden="true">⌂</b>首页</a>
-      <button class="nav-link" type="button" disabled><b aria-hidden="true">⌕</b>搜索 · 待开放</button>
+      <a class="nav-link" href="#search" data-page="search"><b aria-hidden="true">⌕</b>搜索</a>
       <button class="nav-link" type="button" data-page="publish" disabled><b aria-hidden="true">＋</b>发布 · 待开放</button>
       <button class="nav-link" type="button" data-page="my" disabled><b aria-hidden="true">◎</b>我的 · 待开放</button>
     </nav>
