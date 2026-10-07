@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const Posts = require('../js/posts.js');
+const Detail = require('../js/detail.js');
 
 function post(fields = {}) {
   return { id: 'test-1', type: 'lost', name: '黑色雨伞', category: '雨伞', place: '图书馆', time: '2026-10-06T08:00', createdAt: '2026-10-07T09:00:00+08:00', status: '寻找中', desc: '银色伞柄', contact: '微信：test', ...fields };
@@ -127,4 +128,56 @@ test('联系方式不纳入公开关键词检索', () => {
 test('HTML 字符作为普通文本参与搜索', () => {
   const record = post({ name: '<script>物品</script>' });
   assert.deepEqual(Posts.filterPosts([record], { keyword: '<script>' }), [record]);
+});
+
+test('详情查找兼容数值 ID，并准确定位指定记录', () => {
+  const records = [post({ id: 1 }), post({ id: 'post-2' })];
+  assert.equal(Posts.findPost(records, '1'), records[0]);
+  assert.equal(Posts.findPost(records, 'post-2'), records[1]);
+});
+
+test('空 ID、未知 ID 和已删除记录不会错误显示另一条信息', () => {
+  for (const id of [null, undefined, '', '  ', 'missing']) assert.equal(Posts.findPost([post()], id), null);
+  assert.equal(Posts.findPost([], 'test-1'), null);
+});
+
+test('联系方式只去除首尾空格，保持原始内容', () => {
+  assert.equal(Posts.contactText(post({ contact: ' 微信：test <account> ' })), '微信：test <account>');
+});
+
+test('缺少或空白联系方式返回空字符串', () => {
+  for (const contact of [undefined, null, '', '  ']) assert.equal(Posts.contactText(post({ contact })), '');
+});
+
+test('详情将带时区的发布时间换算为校园北京时间', () => {
+  assert.equal(Posts.displayTime('2026-10-07T01:00:00Z'), '2026-10-07 09:00');
+  assert.equal(Posts.displayTime('2026-10-07T09:00:00+08:00'), '2026-10-07 09:00');
+  assert.equal(Posts.displayTime('2026-10-07T08:10'), '2026-10-07 08:10');
+});
+
+test('缺少或损坏的时间不会导致详情渲染报错', () => {
+  assert.equal(Posts.displayTime(undefined), '时间未提供');
+  assert.equal(Posts.displayTime('not-a-date'), '时间格式异常');
+});
+
+test('详情返回路径保留搜索条件，拒绝其他页面或外部地址', () => {
+  assert.equal(Detail.backRoute('search?keyword=%E9%9B%A8%E4%BC%9E&finished=1'), 'search?keyword=%E9%9B%A8%E4%BC%9E&finished=1');
+  assert.equal(Detail.backRoute('home?type=found'), 'home?type=found');
+  for (const from of [null, 'https://example.com', 'javascript:alert(1)', 'detail?id=1']) assert.equal(Detail.backRoute(from), 'home');
+});
+
+test('复制成功时写入完整内容，并且等待写入完成', async () => {
+  let written = '';
+  const result = await Detail.copyText('微信：example', { async writeText(text) { await Promise.resolve(); written = text; } });
+  assert.equal(result, true);
+  assert.equal(written, '微信：example');
+});
+
+test('剪贴板 API 不可用时不提示成功', async () => {
+  assert.equal(await Detail.copyText('联系方式', undefined), false);
+  assert.equal(await Detail.copyText('联系方式', {}), false);
+});
+
+test('剪贴板权限被拒绝时不抛出未处理错误或提示成功', async () => {
+  assert.equal(await Detail.copyText('联系方式', { async writeText() { throw new Error('Permission denied'); } }), false);
 });

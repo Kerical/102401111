@@ -82,8 +82,25 @@
   }
 
   function displayTime(value) {
-    return value ? value.replace('T', ' ').slice(0, 16) : '时间未提供';
+    if (typeof value !== 'string' || !value.trim()) return '时间未提供';
+    if (!Number.isFinite(Date.parse(value.replace(' ', 'T')))) return '时间格式异常';
+    if (!/([zZ]|[+-]\d{2}:\d{2})$/.test(value)) return value.replace('T', ' ').slice(0, 16);
+    const parts = new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Asia/Shanghai', year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
+    }).formatToParts(new Date(value));
+    const field = type => parts.find(part => part.type === type).value;
+    return field('year') + '-' + field('month') + '-' + field('day') + ' ' + field('hour') + ':' + field('minute');
   }
 
-  return { STORAGE_KEY, DEMO_POSTS, isFinished, filterPosts, loadPosts, categories, iconFor, displayTime };
+  function findPost(posts, id) {
+    if (id == null || String(id).trim() === '') return null;
+    return posts.find(post => String(post.id) === String(id)) || null;
+  }
+
+  function contactText(post) {
+    return typeof post.contact === 'string' ? post.contact.trim() : '';
+  }
+
+  return { STORAGE_KEY, DEMO_POSTS, isFinished, filterPosts, loadPosts, categories, iconFor, displayTime, findPost, contactText };
 });
